@@ -5,17 +5,10 @@ export async function POST(req) {
   try {
     const { email, password } = await req.json();
 
-    if (!email || !password) {
-      return new Response(
-        JSON.stringify({ error: "Email and password required" }),
-        { status: 400 }
-      );
-    }
-
     const client = await clientPromise;
     const db = client.db();
 
-    const user = await db.collection("users").findOne({ email });
+    const user = await db.collection("admin").findOne({ email });
 
     if (!user) {
       return new Response(
@@ -24,9 +17,9 @@ export async function POST(req) {
       );
     }
 
-    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    const validPassword = await bcrypt.compare(password, user.password);
 
-    if (!isPasswordCorrect) {
+    if (!validPassword) {
       return new Response(
         JSON.stringify({ error: "Invalid credentials" }),
         { status: 401 }
@@ -37,9 +30,7 @@ export async function POST(req) {
       JSON.stringify({ message: "Login successful" }),
       { status: 200 }
     );
-  }
-  
-  catch (error) {
+  } catch (error) {
     return new Response(
       JSON.stringify({ error: "Server error" }),
       { status: 500 }
